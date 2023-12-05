@@ -5,6 +5,11 @@ import pandas as pd
 import requests
 from io import BytesIO
 
+print("Before importing moviepy")
+import moviepy.editor as mp
+print("After importing moviepy")
+
+
 def download_file(url, dest_path):
     response = requests.get(url)
     with open(dest_path, 'wb') as file:
