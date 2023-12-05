@@ -2,10 +2,21 @@ import moviepy.editor as mp
 import numpy as np
 from scipy.stats import skew
 import pandas as pd
+import requests
+from io import BytesIO
 
-def sync_and_report(video_path, output_path_sync, output_path_report, delay_offset_unsync=0.5):
+def download_file(url, dest_path):
+    response = requests.get(url)
+    with open(dest_path, 'wb') as file:
+        file.write(response.content)
+
+def sync_and_report(video_url, output_path_sync, output_path_report, delay_offset_unsync=0.5):
+    # Download the video file
+    video_dest_path = "video.mp4"
+    download_file(video_url, video_dest_path)
+
     # Load the video file
-    video = mp.VideoFileClip(video_path)
+    video = mp.VideoFileClip(video_dest_path)
 
     # Extract the audio and video tracks
     audio = video.audio
@@ -105,7 +116,7 @@ def sync_and_report(video_path, output_path_sync, output_path_report, delay_offs
             video_frame_times_unsync.append(frame_time)
             audio_delay_values_unsync.append(frame_audio_delay)
             audio_frame_times_unsync.append(frame_time)
-            
+
     # Calculate the total delay for video and audio separately for unsync
     total_video_delay_unsync = sum(video_delay_values_unsync)
     total_audio_delay_unsync = sum(audio_delay_values_unsync)
@@ -129,7 +140,6 @@ def sync_and_report(video_path, output_path_sync, output_path_report, delay_offs
 
     report_df_unsync = pd.DataFrame(report_data_unsync)
 
-
     # Add unsync data to the existing Excel file
     with pd.ExcelWriter(output_path_report, engine='openpyxl', mode='a') as writer:
         # Write the DataFrame to the Excel file for unsynchronization report
@@ -146,11 +156,13 @@ def sync_and_report(video_path, output_path_sync, output_path_report, delay_offs
         worksheet_unsync.cell(row=video_frame_count + 10, column=1, value='Number of frames in video:')
         worksheet_unsync.cell(row=video_frame_count + 10, column=2, value=video_frame_count)
 
+    # Clean up the temporary video file
+    os.unlink(video_dest_path)
 
-# Input parameters
-video_path_input = 'C:/OTT_PROJECT/AUDIO_VIDEO_SYNC/video.mp4'
-output_path_sync_input = 'C:/OTT_PROJECT/AUDIO_VIDEO_SYNC/sync_video.mp4'
-output_path_report_input = 'C:/OTT_PROJECT/AUDIO_VIDEO_SYNC/report_combined.xlsx'
+# Git LFS URL for the video
+video_url_input = "https://github.com/jyothishridhar/Audio_Video_Sync/raw/master/sync_video.mp4"
+output_path_sync_input = 'sync_video.mp4'
+output_path_report_input = 'report_combined.xlsx'
 
 # Call the function with input parameters
-sync_and_report(video_path_input, output_path_sync_input, output_path_report_input)
+sync_and_report(video_url_input, output_path_sync_input, output_path_report_input)
