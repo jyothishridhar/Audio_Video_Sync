@@ -4,7 +4,6 @@ from scipy.stats import skew
 import pandas as pd
 import requests
 from io import BytesIO
-import xlsxwriter
 
 print("Before importing moviepy")
 import moviepy.editor as mp
