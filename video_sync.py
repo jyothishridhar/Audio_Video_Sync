@@ -99,7 +99,7 @@ def sync_and_report(video_path, output_path_sync, output_path_unsync, output_pat
 
         # Write the synchronized video to the output file
         synced_video = video.set_audio(audio)
-        synced_video.write_videofile(output_path_sync, codec='libx264', audio_codec='aac')
+        synced_video.write_videofile(output_path_sync, codec='libx264', audio_codec='aac', verbose=False, threads=4)
 
         # Load the synchronized video file
         video_synced = mp.VideoFileClip(output_path_sync)
