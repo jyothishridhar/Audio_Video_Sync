@@ -4,6 +4,8 @@ from scipy.stats import skew
 import pandas as pd
 import requests
 from io import BytesIO
+from openpyxl import Workbook
+from openpyxl import load_workbook
 
 print("Before importing moviepy")
 import moviepy.editor as mp
@@ -80,20 +82,31 @@ def sync_and_report(video_url, output_path_sync, output_path_report, delay_offse
     # Write the DataFrame to the Excel file for synchronization report
     report_df_sync.to_excel(excel_writer, sheet_name='Sync_Frames', index=False)
 
-    # Write additional information to the Excel file for synchronization report
-    worksheet_sync = excel_writer.sheets['Sync_Frames']
-    worksheet_sync.write(video_frame_count + 3, 0, 'Audio_Video_delay_seconds:')
-    worksheet_sync.write(video_frame_count + 3, 1, report_data_sync['Sync_Summary'][0])
-    worksheet_sync.write(video_frame_count + 6, 0, 'Audio Skewness:')
-    worksheet_sync.write(video_frame_count + 6, 1, audio_skewness_sync)
-    worksheet_sync.write(video_frame_count + 8, 0, 'Number of frames in audio:')
-    worksheet_sync.write(video_frame_count + 8, 1, audio_frame_count)
-    worksheet_sync.write(video_frame_count + 9, 0, 'Number of frames in video:')
-    worksheet_sync.write(video_frame_count + 9, 1, video_frame_count)
-
     # Save the synchronization Excel file
     excel_writer.save()
+    excel_writer.close()
 
+    # Open the existing workbook
+    book = load_workbook(output_path_report)
+
+    # Access the active sheet
+    writer = pd.ExcelWriter(output_path_report, engine='openpyxl')
+    writer.book = book
+
+    # Write additional information to the Excel file for synchronization report
+    worksheet_sync = book['Sync_Frames']
+    worksheet_sync.cell(row=video_frame_count + 3, column=1, value='Audio_Video_delay_seconds:')
+    worksheet_sync.cell(row=video_frame_count + 3, column=2, value=report_data_sync['Sync_Summary'][0])
+    worksheet_sync.cell(row=video_frame_count + 6, column=1, value='Audio Skewness:')
+    worksheet_sync.cell(row=video_frame_count + 6, column=2, value=audio_skewness_sync)
+    worksheet_sync.cell(row=video_frame_count + 8, column=1, value='Number of frames in audio:')
+    worksheet_sync.cell(row=video_frame_count + 8, column=2, value=audio_frame_count)
+    worksheet_sync.cell(row=video_frame_count + 9, column=1, value='Number of frames in video:')
+    worksheet_sync.cell(row=video_frame_count + 9, column=2, value=video_frame_count)
+
+    # Save the synchronization Excel file
+    writer.save()
+    writer.close()
     # Write the synchronized video to the output file
     synced_video = video.set_audio(audio)
     synced_video.write_videofile(output_path_sync, codec='libx264', audio_codec='aac')
