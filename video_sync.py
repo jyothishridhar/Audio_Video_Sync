@@ -1,30 +1,22 @@
+import streamlit as st
 import moviepy.editor as mp
 import numpy as np
 from scipy.stats import skew
 import pandas as pd
-import requests
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import os
-
-print("Before importing moviepy")
-import moviepy.editor as mp
-print("After importing moviepy")
-
 
 def download_file(url, dest_path):
     response = requests.get(url)
     with open(dest_path, 'wb') as file:
         file.write(response.content)
 
-def sync_and_report(video_url, output_path_sync, output_path_report, delay_offset_unsync=0.5):
-    # Download the video file
-    video_dest_path = "video.mp4"
-    download_file(video_url, video_dest_path)
-
+def sync_and_report(video_path, output_path_sync, output_path_report, delay_offset_unsync=0.5):
     # Load the video file
-    video = mp.VideoFileClip(video_dest_path)
+    video = mp.VideoFileClip(video_path)
+    
 
     # Extract the audio and video tracks
     audio = video.audio
@@ -107,7 +99,6 @@ def sync_and_report(video_url, output_path_sync, output_path_report, delay_offse
     # Save the synchronization Excel file
     book.save(output_path_report)
 
-
     # Write the synchronized video to the output file
     synced_video = video.set_audio(audio)
     synced_video.write_videofile(output_path_sync, codec='libx264', audio_codec='aac')
@@ -185,4 +176,30 @@ output_path_report_input = 'report_combined.xlsx'
 
 # Call the function with input parameters
 sync_and_report(video_url_input, output_path_sync_input, output_path_report_input)
+
+# Streamlit UI
+st.title("Audio-Video Synchronization App")
+
+# File uploader
+uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi"])
+
+if uploaded_file is not None:
+    # Temporary file paths
+    video_dest_path = "video.mp4"
+    output_path_sync = 'sync_video.mp4'
+    output_path_report = 'report_combined.xlsx'
+
+    # Save the uploaded file to a temporary location
+    with open(video_dest_path, 'wb') as f:
+        f.write(uploaded_file.read())
+
+    # Perform synchronization and generate report
+    sync_and_report(video_dest_path, output_path_sync, output_path_report)
+
+    # Display download links
+    st.markdown(f"Download [synchronized video]({output_path_sync})")
+    st.markdown(f"Download [synchronization report]({output_path_report})")
+
+    # Clean up the temporary video file
+    os.unlink(video_dest_path)
 
