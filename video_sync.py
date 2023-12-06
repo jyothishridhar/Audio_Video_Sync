@@ -75,7 +75,7 @@ def sync_and_report(video_url, output_path_sync, output_path_report, delay_offse
     report_df_sync = pd.DataFrame(report_data_sync)
 
     # Create a Pandas Excel writer for the report
-    excel_writer = pd.ExcelWriter(output_path_report, engine='xlsxwriter')
+    excel_writer = pd.ExcelWriter(output_path_report, engine='openpyxl')
 
     # Write the DataFrame to the Excel file for synchronization report
     report_df_sync.to_excel(excel_writer, sheet_name='Sync_Frames', index=False)
