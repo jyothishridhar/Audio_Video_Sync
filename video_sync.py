@@ -13,7 +13,7 @@ def download_file(url, dest_path):
     with open(dest_path, 'wb') as file:
         file.write(response.content)
 
-def sync_and_report(video_path, output_path_sync, output_path_report, delay_offset_unsync=0.5):
+def sync_and_report(video_path, output_path_sync, output_path_unsync, output_path_report, delay_offset_unsync=0.5):
     try:
         # Load the video file
         video = mp.VideoFileClip(video_path)
@@ -164,6 +164,11 @@ def sync_and_report(video_path, output_path_sync, output_path_report, delay_offs
             worksheet_unsync.cell(row=video_frame_count + 10, column=1, value='Number of frames in video:')
             worksheet_unsync.cell(row=video_frame_count + 10, column=2, value=video_frame_count)
 
+        # Display download links
+        st.markdown(f"Download [Synchronized Video]({output_path_sync})")
+        st.markdown(f"Download [Unsynchronized Video]({output_path_unsync})")
+        st.markdown(f"Download [Synchronization Report]({output_path_report})")
+
         st.success("Processing completed successfully!")
 
     except Exception as e:
@@ -172,9 +177,13 @@ def sync_and_report(video_path, output_path_sync, output_path_report, delay_offs
         import traceback
         st.text(traceback.format_exc())
 
-        # Clean up the temporary video file even if an error occurs
+        # Clean up the temporary video files even if an error occurs
         if os.path.exists(video_path):
             os.unlink(video_path)
+        if os.path.exists(output_path_sync):
+            os.unlink(output_path_sync)
+        if os.path.exists(output_path_unsync):
+            os.unlink(output_path_unsync)
 
 # Streamlit UI
 st.title("Audio-Video Synchronization App")
@@ -186,6 +195,7 @@ if uploaded_file is not None:
     # Temporary file paths
     video_dest_path = "video.mp4"
     output_path_sync = 'sync_video.mp4'
+    output_path_unsync = 'unsync_video.mp4'
     output_path_report = 'report_combined.xlsx'
 
     # Save the uploaded file to a temporary location
@@ -193,8 +203,9 @@ if uploaded_file is not None:
         f.write(uploaded_file.read())
 
     # Perform synchronization and generate report
-    sync_and_report(video_dest_path, output_path_sync, output_path_report)
+    sync_and_report(video_dest_path, output_path_sync, output_path_unsync, output_path_report)
 
     # Display download links
-    st.markdown(f"Download [synchronized video]({output_path_sync})")
-    st.markdown(f"Download [synchronization report]({output_path_report})")
+    st.markdown(f"Download [Synchronized Video]({output_path_sync})")
+    st.markdown(f"Download [Unsynchronized Video]({output_path_unsync})")
+    st.markdown(f"Download [Synchronization Report]({output_path_report})")
