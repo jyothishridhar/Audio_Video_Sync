@@ -4,6 +4,7 @@ from scipy.stats import skew
 import pandas as pd
 import requests
 from io import BytesIO
+import xlsxwriter
 
 print("Before importing moviepy")
 import moviepy.editor as mp
@@ -171,3 +172,4 @@ output_path_report_input = 'report_combined.xlsx'
 
 # Call the function with input parameters
 sync_and_report(video_url_input, output_path_sync_input, output_path_report_input)
+
