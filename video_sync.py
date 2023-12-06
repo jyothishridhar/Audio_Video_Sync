@@ -90,11 +90,9 @@ def sync_and_report(video_url, output_path_sync, output_path_report, delay_offse
     book = load_workbook(output_path_report)
 
     # Access the active sheet
-    writer = pd.ExcelWriter(output_path_report, engine='openpyxl')
-    writer.book = book
+    worksheet_sync = book['Sync_Frames']
 
     # Write additional information to the Excel file for synchronization report
-    worksheet_sync = book['Sync_Frames']
     worksheet_sync.cell(row=video_frame_count + 3, column=1, value='Audio_Video_delay_seconds:')
     worksheet_sync.cell(row=video_frame_count + 3, column=2, value=report_data_sync['Sync_Summary'][0])
     worksheet_sync.cell(row=video_frame_count + 6, column=1, value='Audio Skewness:')
@@ -105,8 +103,7 @@ def sync_and_report(video_url, output_path_sync, output_path_report, delay_offse
     worksheet_sync.cell(row=video_frame_count + 9, column=2, value=video_frame_count)
 
     # Save the synchronization Excel file
-    writer.save()
-    writer.close()
+    book.save(output_path_report)
     # Write the synchronized video to the output file
     synced_video = video.set_audio(audio)
     synced_video.write_videofile(output_path_sync, codec='libx264', audio_codec='aac')
